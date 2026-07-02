@@ -161,6 +161,7 @@ class ComparadorWorker(QThread):
         itens = []
         for det in root.findall(".//n:det", NS):
             cprod = det.findtext("n:prod/n:cProd", default="", namespaces=NS)
+            qcom  = det.findtext("n:prod/n:qCom", default="", namespaces=NS)
             icms_el = det.find(".//n:ICMS", NS)
             cst = None
             vbc = "0"
@@ -176,7 +177,7 @@ class ComparadorWorker(QThread):
                     if vbc_el   is not None: vbc   = vbc_el.text
                     if picms_el is not None: picms = picms_el.text
                     if vicms_el is not None: vicms = vicms_el.text
-            itens.append({"cprod": cprod, "cst": cst, "vbc": vbc, "picms": picms, "vicms": vicms})
+            itens.append({"cprod": cprod, "qcom": qcom, "cst": cst, "vbc": vbc, "picms": picms, "vicms": vicms})
         return itens
 
     @staticmethod
@@ -1168,11 +1169,14 @@ class JanelaPrincipal(QMainWindow):
                 picms   = item["picms"] or "0"
                 vicms   = item["vicms"] or "0"
 
+                qcom    = item.get("qcom", "")
+                and_qtd = f" AND quantidade = {qcom}" if qcom else ""
                 sql = (
                     f"UPDATE vendaproduto "
                     f"SET cstcsosn = {cst_sql}, vbc = {vbc}, picms = {picms}, vicmsop = {vicms} "
                     f"WHERE vendaunicoid = '{vendaunicoid}' "
-                    f"AND produtoid = '{cprod}';"
+                    f"AND produtoid = '{cprod}'"
+                    f"{and_qtd};"
                 )
                 linhas_sql.append(sql)
                 total_updates += 1
